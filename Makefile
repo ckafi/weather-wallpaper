@@ -11,6 +11,7 @@ install:
 	mkdir -p $(cachedir) 
 	cp wallpaper_blank.png $(cachedir)
 	cp wallpaper ~/bin/
+	cp wallpaper.service ~/.config/systemd/user/
 
 .PHONY : clean
 clean:
