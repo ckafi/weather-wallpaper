@@ -1,4 +1,4 @@
-: foreach *.nim |> nim compile --nimcache:/tmp/nimcache -d:release --opt:size %f |> %B
+: foreach *.nim |> nim compile --nimcache:~/tmp/nimcache -d:release --opt:size %f |> %B
 
 # Install
 : wallpaper |> install -D -m 755 %f ~/bin/%f |> 
