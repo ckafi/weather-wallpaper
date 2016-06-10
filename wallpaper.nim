@@ -136,23 +136,22 @@ proc getMessage(options:openArray[string]):string =
 
 proc composeImage(message:string) =
   discard startProcess(command = "/usr/bin/convert",
-                       args = ["-background", "none",
-                               "-fill", "rgba(120,60,6,0.8)",
-                               "-font", "Veteran-Typewriter",
-                               "-pointsize", "60",
-                               "-interline-spacing", "5",
-                               "-rotate", "28",
-                               "-blur", "10x1.2",
-                               "-size", "1000x",
-                               "caption:$#" % message,
-                               "text.png"]).waitForExit()
-
-  discard startProcess(command = "/usr/bin/composite",
-                       args = ["-compose", "atop",
-                               "-geometry", "+1150+900",
-                               "text.png",
-                               "wallpaper_blank.png",
-                               "result.png"]).waitForExit()
+          args = [
+            "(",
+              "-size", "1000x2000",
+              "-fill", "rgba(120,60,6,0.8)",
+              "-background", "none",
+              "-interline-spacing", "5",
+              "-font", "Veteran-Typewriter",
+              "-pointsize", "60",
+              "caption:$#" % message,
+              "-blur", "10x1.2",
+              "-rotate", "28",
+           ")",
+           "wallpaper_blank.png",
+           "+swap",
+           "-geometry", "+425+900",
+           "-composite", "result.png"]).waitForExit()
 
 
 proc setWallpaper(file:string) =
