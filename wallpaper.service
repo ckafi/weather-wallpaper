@@ -1,0 +1,8 @@
+[Unit]
+Description=Sets the wallpaper
+
+[Service]
+ExecStart= /home/tobias/bin/wallpaper
+
+[Install]
+WantedBy=window-manager.target
