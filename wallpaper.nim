@@ -103,17 +103,35 @@ proc getDateFact():tuple[fact:string,year:int] =
           cast[int](getNum(queryResult["year"])))
 
 
+proc getYearFact():string =
+  let year = getLocalTime(getTime()).year
+  let query = "http://numbersapi.com/$1/year?json&fragment" % $year
+  let queryResult = parseJson(getContent(query))
+  return getStr(queryResult["text"])
+
+
 proc getSwansonQuote():string =
   return parseJson(getContent("http://ron-swanson-quotes.herokuapp.com/v2/quotes"))[0].getStr
 
 
-proc getMessage():string =
-  let message = "It was a $1 $2 $3 around $4 o'clock. As Ron Swanson would say: \"$5\""
+proc getMessage(options:openArray[string]):string =
+  let message = "It is a $1 $2 $3 around $4 o'clock. $5"
   let now = getTimeDescription()
-  # let dateFact = getDateFact()
+  var addendum = ""
+  for option in options:
+    case option
+      of "swanson":
+        addendum &= "As Ron Swanson would say: \"$#\" " % getSwansonQuote()
+      of "datefact":
+        var fact = getDateFact()
+        addendum &= "On the same day in $1 $2. " % [$fact.year, fact.fact]
+      of "yearfact":
+        addendum &= "This Year $#. " % getYearFact()
+      else:
+        discard
   return message % [parseWeatherConditionCode(getWeatherConditionCode(position)),
                     now.weekday, now.time, now.hour,
-                    getSwansonQuote()]
+                    addendum]
 
 
 proc composeImage(message:string) =
@@ -145,6 +163,6 @@ proc setWallpaper(file:string) =
 setCurrentDir(cacheDir)
 setWallpaper("wallpaper_blank.png")
 while true:
-  composeImage(getMessage())
+  composeImage(getMessage(["datefact","yearfact"]))
   setWallpaper("result.png")
   sleep(waitTime)
