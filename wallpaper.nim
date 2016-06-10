@@ -5,10 +5,12 @@ import os
 import osproc
 import strutils
 import times
+import random, random.xorshift
 
 let cacheDir = expandTilde("~/.cache/wallpaper/")
 let position = "Marburg"
 let waitTime = 10 * 60 * 1000
+var rng = initXorshift128Plus(cast[uint64](unixTimeToWinTime(getTime())))
 
 proc getWeatherConditionCode(position:string): int =
   let url = "http://query.yahooapis.com/v1/public/yql?q="
@@ -114,6 +116,15 @@ proc getSwansonQuote():string =
   return parseJson(getContent("http://ron-swanson-quotes.herokuapp.com/v2/quotes"))[0].getStr
 
 
+proc getInterestingFact():string =
+  var rand_url = "http://mentalfloss.com/api/1.0/views/amazing_facts.json?id=" & $rng.randomInt(1560)
+  var result = parseJson(getContent(rand_url))
+  var result_str = result[0]["nid"].getStr()
+  for s in ["<p>","</p>","<em>","</em>"]:
+    result_str = result_str.replace(s)
+  return result_str
+
+
 proc getMessage(options:openArray[string]):string =
   let message = "It is a $1 $2 $3 around $4 o'clock. $5"
   let now = getTimeDescription()
@@ -127,6 +138,8 @@ proc getMessage(options:openArray[string]):string =
         addendum &= "On the same day in $1 $2. " % [$fact.year, fact.fact]
       of "yearfact":
         addendum &= "This Year $#. " % getYearFact()
+      of "interestingfact":
+        addendum &= "Also, did you know: $# " % getInterestingFact()
       else:
         discard
   return message % [parseWeatherConditionCode(getWeatherConditionCode(position)),
@@ -162,6 +175,6 @@ proc setWallpaper(file:string) =
 setCurrentDir(cacheDir)
 setWallpaper("wallpaper_blank.png")
 while true:
-  composeImage(getMessage(["datefact","yearfact"]))
+  composeImage(getMessage(["datefact","yearfact","interestingfact"]))
   setWallpaper("result.png")
   sleep(waitTime)
